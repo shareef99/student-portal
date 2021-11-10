@@ -1,16 +1,25 @@
 import { ChangeEvent } from "react";
-import readXlsxFile from "read-excel-file";
+import xlsx from "xlsx";
 
 interface Props {}
 
 const upload = (props: Props) => {
-    const readUploadFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const readUploadFile = (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
 
         if (e.target.files) {
-            const file = await readXlsxFile(e.target.files[0]);
-            const data = file.map((row) => row);
-            console.log(data);
+            const reader = new FileReader();
+
+            reader.onload = (e: any) => {
+                const data = e.target.result;
+                const workbook = xlsx.read(data, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json = xlsx.utils.sheet_to_json(worksheet);
+                console.log(json);
+            };
+
+            reader.readAsArrayBuffer(e.target.files[0]);
         }
     };
 
